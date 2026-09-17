@@ -1,8 +1,10 @@
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from PIL import Image
 import customtkinter as ctk
+
+# Importación perezosa o directa optimizada para la carga inicial
+from PIL import Image
 
 try:
     from pillow_heif import register_heif_opener
@@ -16,7 +18,7 @@ ctk.set_default_color_theme("blue")
 
 root = ctk.CTk()
 root.title("ConvER Pro")
-root.geometry("700x580")
+root.geometry("700x625")
 root.resizable(False, False)
 
 files = []
@@ -27,44 +29,49 @@ h = ctk.StringVar(value="630")
 
 # --- INTERFAZ ---
 
-# Frame superior
+# Frame superior (Lista de archivos y barra de progreso)
 frame_top = ctk.CTkFrame(root)
 frame_top.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
 
 label_list_title = ctk.CTkLabel(frame_top, text="Archivos Seleccionados:", font=ctk.CTkFont(size=13, weight="bold"))
 label_list_title.pack(anchor="w", padx=10, pady=(10, 5))
 
-scroll_frame = ctk.CTkScrollableFrame(frame_top, width=640, height=180)
+scroll_frame = ctk.CTkScrollableFrame(frame_top, width=640, height=160)
 scroll_frame.pack(padx=10, pady=(0, 10), fill=tk.BOTH, expand=True)
 
 pb = ctk.CTkProgressBar(root, orientation="determinate", width=640)
 pb.pack(pady=5)
 pb.set(0)
 
-# Frame de controles
+# Frame de controles (Configuración y Botones)
 frame_bot = ctk.CTkFrame(root, corner_radius=10)
 frame_bot.pack(fill=tk.X, padx=15, pady=15)
 
-# Botones de selección y conversión en la misma fila
+# Fila 0: Botones de selección y conversión
 btn_files = ctk.CTkButton(frame_bot, text="Seleccionar Archivos", command=lambda: load(False))
-btn_files.grid(row=0, column=0, padx=10, pady=15)
+btn_files.grid(row=0, column=0, padx=10, pady=12, sticky="ew")
 
 btn_folder = ctk.CTkButton(frame_bot, text="Seleccionar Carpeta", command=lambda: load(True))
-btn_folder.grid(row=0, column=1, padx=10, pady=15)
+btn_folder.grid(row=0, column=1, padx=10, pady=12, sticky="ew")
 
 btn_convert = ctk.CTkButton(frame_bot, text="CONVERTIR", command=lambda: convert(), 
                             fg_color="green", hover_color="darkgreen", 
                             font=ctk.CTkFont(size=12, weight="bold"))
-btn_convert.grid(row=0, column=2, padx=10, pady=15)
+btn_convert.grid(row=0, column=2, padx=10, pady=12, sticky="ew")
 
-# Fila de configuración de formato
+# Fila 1: Formato y Calidad (JPG/WEBP)
 label_fmt = ctk.CTkLabel(frame_bot, text="Formato:")
 label_fmt.grid(row=1, column=0, sticky="e", padx=10, pady=5)
 
 combo_fmt = ctk.CTkComboBox(frame_bot, variable=fmt, values=["JPG", "PNG", "WEBP", "BMP", "TIFF"], state="readonly", width=140)
 combo_fmt.grid(row=1, column=1, sticky="w", padx=10, pady=5)
 
-# Fila de dimensiones predeterminadas
+label_q = ctk.CTkLabel(frame_bot, text="Calidad (1-100):")
+label_q.grid(row=1, column=2, sticky="e", padx=5, pady=5)
+entry_q = ctk.CTkEntry(frame_bot, textvariable=q, width=140)
+entry_q.grid(row=1, column=3, sticky="w", padx=10, pady=5)
+
+# Fila 2: Dimensiones (Ancho y Alto)
 label_w = ctk.CTkLabel(frame_bot, text="Ancho (px):")
 label_w.grid(row=2, column=0, sticky="e", padx=10, pady=5)
 entry_w = ctk.CTkEntry(frame_bot, textvariable=w, width=140)
@@ -131,8 +138,13 @@ def convert():
             e = fmt.get().upper()
             dst = os.path.join(out, os.path.splitext(os.path.basename(f))[0] + "." + e.lower())
             
+            # Validación y aplicación de calidad
             if e in ("JPG", "JPEG"): 
-                im.convert("RGB").save(dst, "JPEG", quality=int(q.get()))
+                qual = int(q.get()) if q.get().isdigit() else 95
+                im.convert("RGB").save(dst, "JPEG", quality=qual)
+            elif e == "WEBP":
+                qual = int(q.get()) if q.get().isdigit() else 95
+                im.save(dst, "WEBP", quality=qual)
             else: 
                 im.save(dst, e)
         except Exception as x: 
