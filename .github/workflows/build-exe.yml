@@ -1,0 +1,38 @@
+name: Build Windows EXE (ConvER Pro)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade pyinstaller setuptools wheel
+        pip install customtkinter pillow pillow-heif
+
+    - name: Build with PyInstaller
+      run: |
+        # --onefile: Empaqueta todo en un único archivo ejecutable .exe
+        # --noconsole: Oculta la ventana negra de la terminal ya que es una aplicación de interfaz gráfica
+        # --collect-all customtkinter: Copia todos los recursos necesarios (temas, fuentes) de CustomTkinter
+        pyinstaller --onefile --noconsole --collect-all customtkinter --name "ConvER-Pro" "main.py"
+
+    - name: Upload EXE Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: conver-pro-windows
+        path: dist/*.exe
