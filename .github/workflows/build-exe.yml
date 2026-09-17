@@ -26,13 +26,13 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        # --onefile: Empaqueta todo en un único archivo ejecutable .exe
-        # --noconsole: Oculta la ventana negra de la terminal ya que es una aplicación de interfaz gráfica
-        # --collect-all customtkinter: Copia todos los recursos necesarios (temas, fuentes) de CustomTkinter
-        pyinstaller --onefile --noconsole --collect-all customtkinter --name "ConvER-Pro" "main.py"
+        # --onedir: Crea una carpeta con el ejecutable y sus dependencias para un inicio instantáneo
+        # --noconsole: Oculta la ventana de comandos (ideal para aplicaciones gráficas)
+        # --collect-all customtkinter: Asegura que todos los recursos gráficos de CustomTkinter se incluyan
+        pyinstaller --onedir --noconsole --collect-all customtkinter --name "ConvER-Pro" main.py
 
     - name: Upload EXE Artifact
       uses: actions/upload-artifact@v4
       with:
         name: conver-pro-windows
-        path: dist/*.exe
+        path: dist/ConvER-Pro/
